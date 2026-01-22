@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Random Korean Visual Vocab</title>
+  <style>
+    body { font-family: system-ui, sans-serif; text-align: center; padding: 40px; }
+    img { max-width: 300px; border-radius: 12px; margin: 20px 0; }
+    button { font-size: 18px; padding: 10px 20px; cursor: pointer; }
+    .word { font-size: 32px; font-weight: bold; }
+    .meaning { font-size: 20px; color: #444; }
+  </style>
+</head>
+<body>
+  <h1>🇰🇷 Random Korean Visual Vocab</h1>
+
+  <div class="word" id="word">—</div>
+  <div class="meaning" id="meaning">—</div>
+  <img id="image" src="" alt="" />
+
+  <br />
+  <button onclick="randomWord()">🎲 Random</button>
+
+  <script>
+    // Demo data (sau này thay bằng API)
+    const words = [
+      { ko: "사과", vi: "quả táo", img: "https://source.unsplash.com/400x400/?apple" },
+      { ko: "고양이", vi: "con mèo", img: "https://source.unsplash.com/400x400/?cat" },
+      { ko: "커피", vi: "cà phê", img: "https://source.unsplash.com/400x400/?coffee" },
+      { ko: "책", vi: "quyển sách", img: "https://source.unsplash.com/400x400/?book" },
+      { ko: "비", vi: "mưa", img: "https://source.unsplash.com/400x400/?rain" }
+    ];
+
+    function randomWord() {
+      const w = words[Math.floor(Math.random() * words.length)];
+      document.getElementById("word").textContent = w.ko;
+      document.getElementById("meaning").textContent = w.vi;
+      document.getElementById("image").src = w.img;
+    }
+
+    randomWord();
+  </script>
+</body>
+</html>
