@@ -36,20 +36,13 @@
     .word {
       font-size: 2.2rem;
       font-weight: 700;
-      margin: 16px 0 6px;
+      margin: 16px 0;
     }
 
     .reading {
       font-size: 1.2rem;
       color: #a5b4fc;
-      margin-bottom: 6px;
-    }
-
-    .pos {
-      font-size: 0.9rem;
-      color: #38bdf8;
-      margin-bottom: 10px;
-      font-style: italic;
+      margin-bottom: 8px;
     }
 
     .meaning {
@@ -86,7 +79,6 @@
 
     <div class="word" id="word">---</div>
     <div class="reading" id="reading"></div>
-    <div class="pos" id="pos"></div>
     <div class="meaning" id="meaning"></div>
 
     <button id="nextBtn">Random từ mới</button>
@@ -95,8 +87,7 @@
   </div>
 
   <script>
-    const DATA_URL =
-      "https://raw.githubusercontent.com/vbvss199/Language-Learning-decks/main/korean/korean.json";
+    const DATA_URL = "https://raw.githubusercontent.com/vbvss199/Language-Learning-decks/main/korean/korean.json";
 
     let vocabList = [];
 
@@ -105,11 +96,7 @@
         const res = await fetch(DATA_URL);
         if (!res.ok) throw new Error("Fetch failed");
 
-        const data = await res.json();
-
-        // ✅ LẤY ĐÚNG MẢNG
-        vocabList = data.response || [];
-
+        vocabList = await res.json();
         document.getElementById("status").textContent =
           `Đã tải ${vocabList.length} từ`;
 
@@ -124,24 +111,21 @@
     function showRandomWord() {
       if (!vocabList.length) return;
 
-      const item =
-        vocabList[Math.floor(Math.random() * vocabList.length)];
+      const item = vocabList[Math.floor(Math.random() * vocabList.length)];
 
-      const word = item.word || "—";
-      const reading = item.romanization || "";
-      const meaning = item.english_translation || "";
-      const pos = item.pos || "";
+      // Tùy structure JSON, có thể cần chỉnh key
+      const word = item.word;
+      const reading = item.romanization;
+      const meaning = item.english_translation;
+      const pos = item.pos;
 
-      document.getElementById("word").textContent = word;
-      document.getElementById("reading").textContent =
-        reading ? `/${reading}/` : "";
+      document.getElementById("word").textContent = word || "—";
+      document.getElementById("reading").textContent = reading;
       document.getElementById("meaning").textContent = meaning;
-      document.getElementById("pos").textContent =
-        pos ? `(${pos})` : "";
+      document.getElementById("pos").textContent = pos;
     }
 
-    document.getElementById("nextBtn")
-      .addEventListener("click", showRandomWord);
+    document.getElementById("nextBtn").addEventListener("click", showRandomWord);
 
     loadData();
   </script>
