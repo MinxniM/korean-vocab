@@ -1,162 +1,135 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Random Korean Visual Vocab</title>
+  <title>Korean Random Vocab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      text-align: center;
-      padding: 40px;
-      background: #f7f7f7;
+      background: #0f172a;
+      color: #e5e7eb;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
     }
+
     .card {
-      background: white;
-      max-width: 420px;
-      margin: auto;
-      padding: 24px;
+      background: #020617;
       border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      padding: 24px 28px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      text-align: center;
     }
-    img {
-      max-width: 100%;
-      border-radius: 12px;
+
+    h1 {
+      font-size: 1.4rem;
+      margin-bottom: 12px;
+      color: #38bdf8;
+    }
+
+    .word {
+      font-size: 2.2rem;
+      font-weight: 700;
       margin: 16px 0;
     }
-    .word {
-      font-size: 36px;
-      font-weight: bold;
+
+    .reading {
+      font-size: 1.2rem;
+      color: #a5b4fc;
+      margin-bottom: 8px;
     }
+
     .meaning {
-      font-size: 20px;
-      color: #444;
-      margin-top: 8px;
+      font-size: 1.1rem;
+      color: #e5e7eb;
+      margin-bottom: 16px;
     }
+
     button {
-      font-size: 18px;
-      padding: 10px 20px;
-      border-radius: 10px;
+      background: #38bdf8;
+      color: #020617;
       border: none;
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-size: 1rem;
       cursor: pointer;
-      background: #2563eb;
-      color: white;
-      margin-top: 16px;
+      transition: 0.2s;
     }
-    .small {
-      font-size: 12px;
-      color: #888;
+
+    button:hover {
+      background: #0ea5e9;
+    }
+
+    .status {
       margin-top: 12px;
+      font-size: 0.85rem;
+      color: #94a3b8;
     }
   </style>
 </head>
 <body>
-
-  <h1>🇰🇷 Random Korean Visual Vocab</h1>
-
   <div class="card">
-    <div class="word" id="word">—</div>
-    <div class="meaning" id="meaning">—</div>
-    <img id="image" src="" alt="" />
-    <button onclick="randomWord()">🎲 Random</button>
-    <div class="small" id="source">Source: KrDict</div>
+    <h1>🇰🇷 Korean Random Vocab</h1>
+
+    <div class="word" id="word">---</div>
+    <div class="reading" id="reading"></div>
+    <div class="meaning" id="meaning"></div>
+
+    <button id="nextBtn">Random từ mới</button>
+
+    <div class="status" id="status">Đang tải dữ liệu...</div>
   </div>
 
-<script>
-/* ==============================
-   CONFIG — BẠN PHẢI ĐIỀN KEY
-================================ */
+  <script>
+    const DATA_URL = "https://raw.githubusercontent.com/vbvss199/Language-Learning-decks/main/korean/korean.json";
 
-// KrDict API (BẮT BUỘC)
-const KRDICT_API_KEY = "E66AAE96C6A9703D0D39EF8FAF1A0F3E";
+    let vocabList = [];
 
-// Chọn 1 trong 2: Pexels hoặc Unsplash
-const PEXELS_API_KEY = "4q0EefZngW4teQbOwW5KC6wfSpz0CNOeKMSt8EhDAp2FXwbHcJYlJ3NR";
-// const UNSPLASH_ACCESS_KEY = "YOUR_UNSPLASH_ACCESS_KEY";
+    async function loadData() {
+      try {
+        const res = await fetch(DATA_URL);
+        if (!res.ok) throw new Error("Fetch failed");
 
-/* ==============================
-   KRDICT RANDOM
-================================ */
+        vocabList = await res.json();
+        document.getElementById("status").textContent =
+          `Đã tải ${vocabList.length} từ`;
 
-async function randomWord() {
-  try {
-    setLoading();
-
-    // Random page (KrDict có rất nhiều trang)
-    const randomPage = Math.floor(Math.random() * 500) + 1;
-
-    const url = `https://krdict.korean.go.kr/api/search` +
-      `?key=${KRDICT_API_KEY}` +
-      `&q=*` +
-      `&part=word` +
-      `&translated=y` +
-      `&trans_lang=vi` +
-      `&num=20` +
-      `&start=${randomPage}` +
-      `&sort=dict`;
-
-    const res = await fetch(url);
-    const text = await res.text();
-
-    const parser = new DOMParser();
-    const xml = parser.parseFromString(text, "text/xml");
-
-    const items = Array.from(xml.querySelectorAll("item"));
-    if (items.length === 0) {
-      throw new Error("No words from KrDict");
-    }
-
-    const item = items[Math.floor(Math.random() * items.length)];
-
-    const ko = item.querySelector("word")?.textContent || "—";
-    const vi = item.querySelector("trans_word")?.textContent || "—";
-
-    document.getElementById("word").textContent = ko;
-    document.getElementById("meaning").textContent = vi;
-
-    // Lấy ảnh minh họa
-    const imgUrl = await getImage(vi || ko);
-    document.getElementById("image").src = imgUrl || "";
-
-  } catch (err) {
-    console.error(err);
-    document.getElementById("word").textContent = "Lỗi 😢";
-    document.getElementById("meaning").textContent = "Không lấy được dữ liệu";
-    document.getElementById("image").src = "";
-  }
-}
-
-function setLoading() {
-  document.getElementById("word").textContent = "Loading...";
-  document.getElementById("meaning").textContent = "";
-  document.getElementById("image").src = "";
-}
-
-/* ==============================
-   IMAGE API — PEXELS
-================================ */
-
-async function getImage(keyword) {
-  if (!keyword) return "";
-
-  // ---- PEXELS ----
-  const res = await fetch(
-    `https://api.pexels.com/v1/search?query=${encodeURIComponent(keyword)}&per_page=1`,
-    {
-      headers: {
-        Authorization: PEXELS_API_KEY
+        showRandomWord();
+      } catch (err) {
+        console.error(err);
+        document.getElementById("status").textContent =
+          "❌ Không tải được file JSON";
       }
     }
-  );
 
-  const data = await res.json();
-  return data.photos?.[0]?.src?.medium || "";
-}
+    function showRandomWord() {
+      if (!vocabList.length) return;
 
-/* ==============================
-   AUTO LOAD
-================================ */
-randomWord();
-</script>
+      const item = vocabList[Math.floor(Math.random() * vocabList.length)];
 
+      // Tùy structure JSON, có thể cần chỉnh key
+      const word = item.word;
+      const reading = item.romanization;
+      const meaning =
+        item.english_translation;
+      const hanja =
+        item.definitions || item.hanja;
+
+      document.getElementById("word").textContent = word || "—";
+      document.getElementById("reading").textContent = reading;
+      document.getElementById("meaning").textContent = meaning;
+      document.getElementById("hanja").textContent = hanja;
+    }
+
+    document.getElementById("nextBtn").addEventListener("click", showRandomWord);
+
+    loadData();
+  </script>
 </body>
 </html>
