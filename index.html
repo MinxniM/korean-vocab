@@ -43,14 +43,28 @@
     .reading {
       font-size: 1.2rem;
       color: #a5b4fc;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
-    .pos {
-      font-size: 0.9rem;
-      color: #fbbf24;
+    .meta {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
       margin-bottom: 10px;
-      font-style: italic;
+      flex-wrap: wrap;
+    }
+
+    .pos, .level {
+      font-size: 0.85rem;
+      color: #fbbf24;
+      padding: 2px 10px;
+      border-radius: 999px;
+      background: rgba(251,191,36,0.1);
+    }
+
+    .level {
+      color: #34d399;
+      background: rgba(52,211,153,0.1);
     }
 
     .meaning {
@@ -76,8 +90,9 @@
 
     .status {
       margin-top: 12px;
-      font-size: 0.85rem;
-      color: #94a3b8;
+      font-size: 0.8rem;
+      color: #ef4444;
+      min-height: 1em;
     }
   </style>
 </head>
@@ -87,12 +102,17 @@
 
     <div class="word" id="word">---</div>
     <div class="reading" id="reading"></div>
-    <div class="pos" id="pos"></div>
+
+    <div class="meta">
+      <div class="pos" id="pos"></div>
+      <div class="level" id="level"></div>
+    </div>
+
     <div class="meaning" id="meaning"></div>
 
     <button id="nextBtn">Random từ mới</button>
 
-    <div class="status" id="status">Đang tải dữ liệu...</div>
+    <div class="status" id="status"></div>
   </div>
 
   <script>
@@ -108,10 +128,8 @@
 
         vocabList = await res.json();
 
-        document.getElementById("status").textContent =
-          `Đã tải ${vocabList.length} từ`;
-
-        console.log("Sample item:", vocabList[0]);
+        // Không hiển thị số lượng nữa
+        document.getElementById("status").textContent = "";
 
         showRandomWord();
       } catch (err) {
@@ -131,11 +149,14 @@
       const reading = item.romanization || "";
       const meaning = item.english_translation || "";
       const pos = item.pos || "";
+      const level = item.cefr_level || "";
 
       document.getElementById("word").textContent = word;
       document.getElementById("reading").textContent = reading;
       document.getElementById("meaning").textContent = meaning;
-      document.getElementById("pos").textContent = pos;
+
+      document.getElementById("pos").textContent = pos || "—";
+      document.getElementById("level").textContent = level || "CEFR ?";
     }
 
     document
