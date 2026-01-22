@@ -274,105 +274,104 @@
   </div>
 
   <script>
-    const DATA_URL =
-      "https://raw.githubusercontent.com/vbvss199/Language-Learning-decks/main/korean/korean.json";
+  const API_URL = "/api/random";
 
-    let vocabList = [];
-    const loadingOverlay = document.getElementById("loadingOverlay");
-    const nextBtn = document.getElementById("nextBtn");
-    const reloadBtn = document.getElementById("reloadBtn");
-    const netStatus = document.getElementById("netStatus");
+  const loadingOverlay = document.getElementById("loadingOverlay");
+  const nextBtn = document.getElementById("nextBtn");
+  const reloadBtn = document.getElementById("reloadBtn");
+  const netStatus = document.getElementById("netStatus");
 
-    function updateNetworkStatus() {
-      if (!navigator.onLine) {
-        netStatus.textContent = "❌ Offline";
-        netStatus.style.color = "#f87171";
+  function updateNetworkStatusText(label, color) {
+    netStatus.textContent = label;
+    netStatus.style.color = color;
+  }
+
+  function updateOnlineOffline() {
+    if (!navigator.onLine) {
+      updateNetworkStatusText("❌ Offline", "#f87171");
+    }
+  }
+
+  window.addEventListener("online", () =>
+    updateNetworkStatusText("📶 Online", "#34d399")
+  );
+  window.addEventListener("offline", updateOnlineOffline);
+  updateOnlineOffline();
+
+  function applyFade() {
+    document.querySelectorAll(".fade").forEach(el => {
+      el.classList.remove("fade");
+      void el.offsetWidth;
+      el.classList.add("fade");
+    });
+  }
+
+  function renderWord(item) {
+    document.getElementById("word").textContent = item.word || "—";
+    document.getElementById("reading").textContent = item.romanization || "";
+    document.getElementById("meaning").textContent =
+      item.english_translation || "";
+    document.getElementById("pos").textContent = item.pos || "—";
+    document.getElementById("level").textContent =
+      item.cefr_level || "CEFR ?";
+
+    const exNative = item.example_sentence_native || "";
+    const exEn = item.example_sentence_english || "";
+
+    const exNativeEl = document.getElementById("exNative");
+    const exEnEl = document.getElementById("exEn");
+    const noExEl = document.getElementById("noExample");
+
+    if (exNative || exEn) {
+      exNativeEl.textContent = exNative;
+      exEnEl.textContent = exEn;
+      exNativeEl.style.display = "";
+      exEnEl.style.display = "";
+      noExEl.style.display = "none";
+    } else {
+      exNativeEl.style.display = "none";
+      exEnEl.style.display = "none";
+      noExEl.style.display = "";
+    }
+
+    applyFade();
+  }
+
+  async function fetchRandomWord() {
+    try {
+      loadingOverlay.style.display = "flex";
+      nextBtn.disabled = true;
+
+      const start = performance.now();
+      const res = await fetch(API_URL, { cache: "no-store" });
+      const duration = performance.now() - start;
+
+      if (!res.ok) throw new Error("API error");
+
+      if (duration > 2000) {
+        updateNetworkStatusText("🐢 Mạng chậm", "#fbbf24");
       } else {
-        netStatus.textContent = "📶 Online";
-        netStatus.style.color = "#34d399";
-      }
-    }
-
-    window.addEventListener("online", updateNetworkStatus);
-    window.addEventListener("offline", updateNetworkStatus);
-    updateNetworkStatus();
-
-    async function loadData() {
-      try {
-        loadingOverlay.style.display = "flex";
-        nextBtn.disabled = true;
-
-        const start = performance.now();
-        const res = await fetch(DATA_URL);
-        if (!res.ok) throw new Error("Fetch failed");
-
-        vocabList = await res.json();
-
-        const duration = performance.now() - start;
-        if (duration > 2000) {
-          netStatus.textContent = "🐢 Mạng chậm";
-          netStatus.style.color = "#fbbf24";
-        } else {
-          netStatus.textContent = "⚡ Mạng ổn";
-          netStatus.style.color = "#34d399";
-        }
-
-        loadingOverlay.style.display = "none";
-        nextBtn.disabled = false;
-
-        showRandomWord();
-      } catch (err) {
-        console.error(err);
-        netStatus.textContent = "❌ Lỗi tải dữ liệu";
-        netStatus.style.color = "#f87171";
-      }
-    }
-
-    function applyFade() {
-      document.querySelectorAll(".fade").forEach(el => {
-        el.classList.remove("fade");
-        void el.offsetWidth;
-        el.classList.add("fade");
-      });
-    }
-
-    function showRandomWord() {
-      if (!vocabList.length) return;
-
-      const item = vocabList[Math.floor(Math.random() * vocabList.length)];
-
-      document.getElementById("word").textContent = item.word || "—";
-      document.getElementById("reading").textContent = item.romanization || "";
-      document.getElementById("meaning").textContent = item.english_translation || "";
-      document.getElementById("pos").textContent = item.pos || "—";
-      document.getElementById("level").textContent = item.cefr_level || "CEFR ?";
-
-      const exNative = item.example_sentence_native || "";
-      const exEn = item.example_sentence_english || "";
-
-      const exNativeEl = document.getElementById("exNative");
-      const exEnEl = document.getElementById("exEn");
-      const noExEl = document.getElementById("noExample");
-
-      if (exNative || exEn) {
-        exNativeEl.textContent = exNative;
-        exEnEl.textContent = exEn;
-        exNativeEl.style.display = "";
-        exEnEl.style.display = "";
-        noExEl.style.display = "none";
-      } else {
-        exNativeEl.style.display = "none";
-        exEnEl.style.display = "none";
-        noExEl.style.display = "";
+        updateNetworkStatusText("⚡ Mạng ổn", "#34d399");
       }
 
-      applyFade();
+      const item = await res.json();
+      renderWord(item);
+
+      loadingOverlay.style.display = "none";
+      nextBtn.disabled = false;
+    } catch (err) {
+      console.error(err);
+      updateNetworkStatusText("❌ Lỗi API", "#f87171");
+      loadingOverlay.style.display = "none";
     }
+  }
 
-    nextBtn.addEventListener("click", showRandomWord);
-    reloadBtn.addEventListener("click", loadData);
+  nextBtn.addEventListener("click", fetchRandomWord);
+  reloadBtn.addEventListener("click", fetchRandomWord);
 
-    loadData();
-  </script>
+  // Initial load
+  fetchRandomWord();
+</script>
 </body>
 </html>
+
