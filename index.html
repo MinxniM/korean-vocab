@@ -21,7 +21,7 @@
       background: #020617;
       border-radius: 16px;
       padding: 24px 28px;
-      max-width: 480px;
+      max-width: 420px;
       width: 100%;
       box-shadow: 0 20px 40px rgba(0,0,0,0.4);
       text-align: center;
@@ -34,35 +34,28 @@
     }
 
     .word {
-      font-size: 2.4rem;
-      font-weight: 800;
-      margin: 12px 0;
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin: 16px 0 6px;
     }
 
     .reading {
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       color: #a5b4fc;
       margin-bottom: 6px;
     }
 
-    .meaning {
-      font-size: 1.05rem;
-      margin-bottom: 8px;
-    }
-
-    .defs {
-      font-size: 0.95rem;
-      color: #c7d2fe;
-      margin-bottom: 10px;
-    }
-
-    .example {
+    .pos {
       font-size: 0.9rem;
-      color: #94a3b8;
-      border-top: 1px solid #1e293b;
-      padding-top: 10px;
-      margin-top: 10px;
-      text-align: left;
+      color: #38bdf8;
+      margin-bottom: 10px;
+      font-style: italic;
+    }
+
+    .meaning {
+      font-size: 1.1rem;
+      color: #e5e7eb;
+      margin-bottom: 16px;
     }
 
     button {
@@ -74,7 +67,6 @@
       font-size: 1rem;
       cursor: pointer;
       transition: 0.2s;
-      margin-top: 12px;
     }
 
     button:hover {
@@ -82,8 +74,8 @@
     }
 
     .status {
-      margin-top: 10px;
-      font-size: 0.8rem;
+      margin-top: 12px;
+      font-size: 0.85rem;
       color: #94a3b8;
     }
   </style>
@@ -94,12 +86,10 @@
 
     <div class="word" id="word">---</div>
     <div class="reading" id="reading"></div>
+    <div class="pos" id="pos"></div>
     <div class="meaning" id="meaning"></div>
-    <div class="defs" id="defs"></div>
 
-    <div class="example" id="example"></div>
-
-    <button id="nextBtn">🎲 Random từ mới</button>
+    <button id="nextBtn">Random từ mới</button>
 
     <div class="status" id="status">Đang tải dữ liệu...</div>
   </div>
@@ -117,7 +107,7 @@
 
         const data = await res.json();
 
-        // 🔴 QUAN TRỌNG: lấy đúng mảng response
+        // ✅ LẤY ĐÚNG MẢNG
         vocabList = data.response || [];
 
         document.getElementById("status").textContent =
@@ -134,42 +124,24 @@
     function showRandomWord() {
       if (!vocabList.length) return;
 
-      const item = vocabList[Math.floor(Math.random() * vocabList.length)];
+      const item =
+        vocabList[Math.floor(Math.random() * vocabList.length)];
 
-      const word = item.word || "";
-      const reading = item.romanization
-        ? `/${item.romanization}/`
-        : "";
-
-      const meaning = item.english_translation
-        ? item.english_translation.replaceAll(";", ", ")
-        : "";
-
-      const defs = (item.definitions || [])
-        .map(d => {
-          if (d.hanja) {
-            return `${d.gloss} (${d.hanja})`;
-          }
-          return d.gloss;
-        })
-        .join(" • ");
-
-      const exampleNative = item.example_sentence_native || "";
-      const exampleEnglish = item.example_sentence_english || "";
+      const word = item.word || "—";
+      const reading = item.romanization || "";
+      const meaning = item.english_translation || "";
+      const pos = item.pos || "";
 
       document.getElementById("word").textContent = word;
-      document.getElementById("reading").textContent = reading;
+      document.getElementById("reading").textContent =
+        reading ? `/${reading}/` : "";
       document.getElementById("meaning").textContent = meaning;
-      document.getElementById("defs").textContent = defs;
-
-      document.getElementById("example").innerHTML = exampleNative
-        ? `<div><strong>Ví dụ:</strong></div>
-           <div>🇰🇷 ${exampleNative}</div>
-           <div>🇺🇸 ${exampleEnglish}</div>`
-        : "";
+      document.getElementById("pos").textContent =
+        pos ? `(${pos})` : "";
     }
 
-    document.getElementById("nextBtn").addEventListener("click", showRandomWord);
+    document.getElementById("nextBtn")
+      .addEventListener("click", showRandomWord);
 
     loadData();
   </script>
