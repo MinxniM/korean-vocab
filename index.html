@@ -22,7 +22,7 @@
       background: #020617;
       border-radius: 16px;
       padding: 24px 28px;
-      max-width: 420px;
+      max-width: 440px;
       width: 100%;
       box-shadow: 0 20px 40px rgba(0,0,0,0.4);
       text-align: center;
@@ -49,13 +49,13 @@
     .meta {
       display: flex;
       justify-content: center;
-      gap: 12px;
+      gap: 10px;
       margin-bottom: 10px;
       flex-wrap: wrap;
     }
 
     .pos, .level {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: #fbbf24;
       padding: 2px 10px;
       border-radius: 999px;
@@ -69,8 +69,34 @@
 
     .meaning {
       font-size: 1.1rem;
+      margin-bottom: 12px;
+    }
+
+    .examples {
+      text-align: left;
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 14px;
+    }
+
+    .ex-native {
+      font-size: 0.95rem;
       color: #e5e7eb;
-      margin-bottom: 16px;
+      margin-bottom: 4px;
+    }
+
+    .ex-en {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      font-style: italic;
+    }
+
+    .no-example {
+      font-size: 0.8rem;
+      color: #64748b;
+      font-style: italic;
     }
 
     button {
@@ -89,8 +115,8 @@
     }
 
     .status {
-      margin-top: 12px;
-      font-size: 0.8rem;
+      margin-top: 10px;
+      font-size: 0.75rem;
       color: #ef4444;
       min-height: 1em;
     }
@@ -110,6 +136,14 @@
 
     <div class="meaning" id="meaning"></div>
 
+    <div class="examples" id="examples">
+      <div class="ex-native" id="exNative"></div>
+      <div class="ex-en" id="exEn"></div>
+      <div class="no-example" id="noExample" style="display:none;">
+        (Không có câu ví dụ)
+      </div>
+    </div>
+
     <button id="nextBtn">Random từ mới</button>
 
     <div class="status" id="status"></div>
@@ -127,8 +161,6 @@
         if (!res.ok) throw new Error("Fetch failed");
 
         vocabList = await res.json();
-
-        // Không hiển thị số lượng nữa
         document.getElementById("status").textContent = "";
 
         showRandomWord();
@@ -151,12 +183,31 @@
       const pos = item.pos || "";
       const level = item.cefr_level || "";
 
+      const exNative = item.example_sentence_native || "";
+      const exEn = item.example_sentence_english || "";
+
       document.getElementById("word").textContent = word;
       document.getElementById("reading").textContent = reading;
       document.getElementById("meaning").textContent = meaning;
 
       document.getElementById("pos").textContent = pos || "—";
       document.getElementById("level").textContent = level || "CEFR ?";
+
+      const exNativeEl = document.getElementById("exNative");
+      const exEnEl = document.getElementById("exEn");
+      const noExEl = document.getElementById("noExample");
+
+      if (exNative || exEn) {
+        exNativeEl.textContent = exNative;
+        exEnEl.textContent = exEn;
+        exNativeEl.style.display = "";
+        exEnEl.style.display = "";
+        noExEl.style.display = "none";
+      } else {
+        exNativeEl.style.display = "none";
+        exEnEl.style.display = "none";
+        noExEl.style.display = "";
+      }
     }
 
     document
