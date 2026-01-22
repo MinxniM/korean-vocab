@@ -21,7 +21,7 @@
       background: #020617;
       border-radius: 16px;
       padding: 24px 28px;
-      max-width: 420px;
+      max-width: 480px;
       width: 100%;
       box-shadow: 0 20px 40px rgba(0,0,0,0.4);
       text-align: center;
@@ -34,21 +34,35 @@
     }
 
     .word {
-      font-size: 2.2rem;
-      font-weight: 700;
-      margin: 16px 0;
+      font-size: 2.4rem;
+      font-weight: 800;
+      margin: 12px 0;
     }
 
     .reading {
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       color: #a5b4fc;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .meaning {
-      font-size: 1.1rem;
-      color: #e5e7eb;
-      margin-bottom: 16px;
+      font-size: 1.05rem;
+      margin-bottom: 8px;
+    }
+
+    .defs {
+      font-size: 0.95rem;
+      color: #c7d2fe;
+      margin-bottom: 10px;
+    }
+
+    .example {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      border-top: 1px solid #1e293b;
+      padding-top: 10px;
+      margin-top: 10px;
+      text-align: left;
     }
 
     button {
@@ -60,6 +74,7 @@
       font-size: 1rem;
       cursor: pointer;
       transition: 0.2s;
+      margin-top: 12px;
     }
 
     button:hover {
@@ -67,8 +82,8 @@
     }
 
     .status {
-      margin-top: 12px;
-      font-size: 0.85rem;
+      margin-top: 10px;
+      font-size: 0.8rem;
       color: #94a3b8;
     }
   </style>
@@ -80,14 +95,18 @@
     <div class="word" id="word">---</div>
     <div class="reading" id="reading"></div>
     <div class="meaning" id="meaning"></div>
+    <div class="defs" id="defs"></div>
 
-    <button id="nextBtn">Random từ mới</button>
+    <div class="example" id="example"></div>
+
+    <button id="nextBtn">🎲 Random từ mới</button>
 
     <div class="status" id="status">Đang tải dữ liệu...</div>
   </div>
 
   <script>
-    const DATA_URL = "https://raw.githubusercontent.com/vbvss199/Language-Learning-decks/main/korean/korean.json";
+    const DATA_URL =
+      "https://raw.githubusercontent.com/vbvss199/Language-Learning-decks/main/korean/korean.json";
 
     let vocabList = [];
 
@@ -96,7 +115,11 @@
         const res = await fetch(DATA_URL);
         if (!res.ok) throw new Error("Fetch failed");
 
-        vocabList = await res.json();
+        const data = await res.json();
+
+        // 🔴 QUAN TRỌNG: lấy đúng mảng response
+        vocabList = data.response || [];
+
         document.getElementById("status").textContent =
           `Đã tải ${vocabList.length} từ`;
 
@@ -113,18 +136,37 @@
 
       const item = vocabList[Math.floor(Math.random() * vocabList.length)];
 
-      // Tùy structure JSON, có thể cần chỉnh key
-      const word = item.word;
-      const reading = item.romanization;
-      const meaning =
-        item.english_translation;
-      const hanja =
-        item.definitions || item.hanja;
+      const word = item.word || "";
+      const reading = item.romanization
+        ? `/${item.romanization}/`
+        : "";
 
-      document.getElementById("word").textContent = word || "—";
+      const meaning = item.english_translation
+        ? item.english_translation.replaceAll(";", ", ")
+        : "";
+
+      const defs = (item.definitions || [])
+        .map(d => {
+          if (d.hanja) {
+            return `${d.gloss} (${d.hanja})`;
+          }
+          return d.gloss;
+        })
+        .join(" • ");
+
+      const exampleNative = item.example_sentence_native || "";
+      const exampleEnglish = item.example_sentence_english || "";
+
+      document.getElementById("word").textContent = word;
       document.getElementById("reading").textContent = reading;
       document.getElementById("meaning").textContent = meaning;
-      document.getElementById("hanja").textContent = hanja;
+      document.getElementById("defs").textContent = defs;
+
+      document.getElementById("example").innerHTML = exampleNative
+        ? `<div><strong>Ví dụ:</strong></div>
+           <div>🇰🇷 ${exampleNative}</div>
+           <div>🇺🇸 ${exampleEnglish}</div>`
+        : "";
     }
 
     document.getElementById("nextBtn").addEventListener("click", showRandomWord);
